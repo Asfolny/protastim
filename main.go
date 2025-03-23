@@ -16,7 +16,7 @@ type rows struct {
 	data []table.Row
 }
 
-type created bool
+type editingDone bool
 
 type model struct {
 	view   tea.Model

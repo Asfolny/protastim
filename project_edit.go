@@ -96,7 +96,7 @@ func (m projectEditModel) createProjectCmd() func() tea.Msg {
 
 	return func() tea.Msg {
 		m.config.queries.CreateProject(context.Background(), dataset)
-		return created(true)
+		return editingDone(true)
 	}
 }
 
@@ -106,7 +106,7 @@ func (m projectEditModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.WindowSizeMsg:
 		m.width = min(msg.Width, maxWidth) - m.config.styles.Base.GetHorizontalFrameSize()
 
-	case created:
+	case editingDone:
 		return m, changeView(newProjectList(m.config))
 	}
 
