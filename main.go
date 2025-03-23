@@ -73,6 +73,15 @@ func main() {
 		os.Exit(1)
 	}
 
+	const q = `
+    PRAGMA foreign_keys = ON;
+    `
+	_, err = conn.Exec(q)
+	if err != nil {
+		fmt.Printf("Failed to set up sqlite pragmas:\n%s\n", err)
+		os.Exit(1)
+	}
+
 	if err := goose.Setup(conn, "schema"); err != nil {
 		fmt.Printf("Failed to run migrations:\n%s\n", err)
 		os.Exit(1)
