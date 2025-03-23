@@ -108,14 +108,6 @@ func (m projectEditModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case created:
 		return m, changeView(newProjectList(m.config))
-
-	case tea.KeyMsg:
-		switch msg.String() {
-		case "ctrl+c":
-			return m, tea.Interrupt
-		case "esc", "q":
-			return m, tea.Quit
-		}
 	}
 
 	var cmds []tea.Cmd

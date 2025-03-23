@@ -67,10 +67,6 @@ func (m projectModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.modal = newProjectEdit(m.config, nil)
 			m.editing = true
 			return m, m.modal.Init()
-		case "ctrl+c":
-			return m, tea.Interrupt
-		case "esc", "q":
-			return m, tea.Quit
 		}
 	}
 
