@@ -79,8 +79,6 @@ func (m projectEditModel) Init() tea.Cmd {
 	return m.form.Init()
 }
 
-type created bool
-
 func (m projectEditModel) createProjectCmd() func() tea.Msg {
 	m.config.mu.Lock()
 	defer m.config.mu.Unlock()

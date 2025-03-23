@@ -52,10 +52,6 @@ func newProjectList(config *config) projectListModel {
 	return m
 }
 
-type rows struct {
-	data []table.Row
-}
-
 func (m projectListModel) fetchProjects() tea.Msg {
 	m.config.mu.RLock()
 	defer m.config.mu.RUnlock()

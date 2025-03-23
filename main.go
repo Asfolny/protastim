@@ -9,7 +9,14 @@ import (
 	db "github.com/Asfolny/protastim/internal/database"
 	goose "github.com/Asfolny/protastim/internal/sql"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/bubbles/table"
 )
+
+type rows struct {
+	data []table.Row
+}
+
+type created bool
 
 type model struct {
 	view   tea.Model
