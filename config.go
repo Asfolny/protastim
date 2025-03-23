@@ -63,8 +63,7 @@ func newStyles(lg *lipgloss.Renderer) *styles {
 
 	s.BaseTable = lg.NewStyle().
 		BorderStyle(lipgloss.NormalBorder()).
-		BorderForeground(lipgloss.Color("63")).
-		Margin(1, 4, 0, 1)
+		BorderForeground(lipgloss.Color("63"))
 
 	s.HeaderText = lg.NewStyle().
 		Foreground(indigo).
