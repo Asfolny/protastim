@@ -42,7 +42,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (m model) View() string {
 	var b strings.Builder
 	b.WriteString(m.config.styles.HeaderText.Render("Protastim\n\n"))
-	b.WriteString(m.view.View())
+	b.WriteString(m.config.styles.Base.Render(m.view.View()))
 
 	return b.String()
 }
