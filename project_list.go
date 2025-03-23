@@ -92,13 +92,6 @@ func (m projectListModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case tea.KeyMsg:
 		switch msg.String() {
-		case "esc":
-			if m.table.Focused() {
-				m.table.Blur()
-			} else {
-				m.table.Focus()
-			}
-
 		case "ctrl+n":
 			return m, changeView(newProjectEdit(m.config, nil))
 
