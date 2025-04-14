@@ -13,6 +13,14 @@ require (
 	modernc.org/sqlite v1.34.5
 )
 
+replace github.com/charmbracelet/huh => ../go-charm-huh
+
+//replace github.com/charmbracelet/bubbles => ../go-charm-bubbles
+
+//replace github.com/charmbracelet/lipgloss => ../go-charm-lipgloss
+
+//replace github.com/charmbracelet/bubbletea => ../go-charm-tea
+
 require (
 	cel.dev/expr v0.18.0 // indirect
 	filippo.io/edwards25519 v1.1.0 // indirect
