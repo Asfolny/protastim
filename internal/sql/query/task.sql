@@ -4,6 +4,9 @@ SELECT * FROM tasks WHERE id = ?;
 -- name: ListTasks :many
 SELECT * FROM tasks;
 
+-- name: ListTasksByProject :many
+SELECT * FROM tasks WHERE project_id = ? ORDER BY status;
+
 -- name: CreateTask :one
 INSERT INTO tasks (name, description, status, project_id)
 VALUES (?, ?, ?, ?)

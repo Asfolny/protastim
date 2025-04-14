@@ -106,6 +106,41 @@ func (q *Queries) ListTasks(ctx context.Context) ([]Task, error) {
 	return items, nil
 }
 
+const listTasksByProject = `-- name: ListTasksByProject :many
+SELECT id, name, description, status, project_id, created_at, updated_at FROM tasks WHERE project_id = ? ORDER BY status
+`
+
+func (q *Queries) ListTasksByProject(ctx context.Context, projectID int64) ([]Task, error) {
+	rows, err := q.db.QueryContext(ctx, listTasksByProject, projectID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Task
+	for rows.Next() {
+		var i Task
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Description,
+			&i.Status,
+			&i.ProjectID,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const moveTask = `-- name: MoveTask :one
 UPDATE tasks
 SET project_id = ?
