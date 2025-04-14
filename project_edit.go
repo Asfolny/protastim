@@ -102,7 +102,6 @@ func (m projectEditModel) createProjectCmd() func() tea.Msg {
 
 func (m projectEditModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
-	// TODO make custom func for tea.Cmd and set it on m.form.SubmitCmd to run the db's createProjectCmd function
 	case tea.WindowSizeMsg:
 		m.width = min(msg.Width, maxWidth) - m.config.styles.Base.GetHorizontalFrameSize()
 
