@@ -17,10 +17,15 @@ type taskEditModel struct {
 	form   *huh.Form
 	width  int
 	create bool
+	loading *bool
+	projects *[]db.Project
+	project string
 }
 
-func newTaskEdit(config *config, task *db.Task) tea.Model {
-	m := taskEditModel{config: config, create: task == nil}
+func newTaskEdit(config *config, task *db.Task, project string) tea.Model {
+	t := true
+	var p []db.Project
+	m := taskEditModel{config: config, create: task == nil, loading: &t, projects: &p, project: project}
 	confirmDefault := true
 
 	var name string

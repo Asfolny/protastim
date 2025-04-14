@@ -89,7 +89,7 @@ func (m taskListModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "ctrl+n":
-			return m, changeView(newTaskEdit(m.config, nil))
+			return m, changeView(newTaskEdit(m.config, nil, ""))
 
 		case "enter":
 			id, _ := strconv.ParseInt(m.table.SelectedRow()[0], 10, 64)

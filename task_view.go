@@ -64,7 +64,7 @@ func (m taskModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "ctrl+n":
-			m.modal = newTaskEdit(m.config, nil)
+			m.modal = newTaskEdit(m.config, nil, "")
 			m.editing = true
 			return m, m.modal.Init()
 		}

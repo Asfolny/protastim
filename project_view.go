@@ -64,9 +64,11 @@ func (m projectModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "ctrl+n":
-			m.modal = newProjectEdit(m.config, nil)
-			m.editing = true
-			return m, m.modal.Init()
+			return m, changeView(newProjectEdit(m.config, nil))
+		case "ctrl+e":
+			return m, changeView(newProjectEdit(m.config, m.data))
+		case "ctrl+t":
+			return m, changeView(newTaskEdit(m.config, nil, m.data.Name))
 		}
 	}
 
