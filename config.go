@@ -6,6 +6,7 @@ import (
 	db "github.com/Asfolny/protastim/internal/database"
 	"github.com/charmbracelet/bubbles/spinner"
 	"github.com/charmbracelet/lipgloss"
+	tea "github.com/charmbracelet/bubbletea"
 )
 
 type config struct {
@@ -14,6 +15,7 @@ type config struct {
 	maxWidth int
 	queries  *db.Queries
 	mu       sync.RWMutex
+	size     tea.WindowSizeMsg
 }
 
 func newConfig(q *db.Queries) *config {
@@ -25,6 +27,10 @@ func newConfig(q *db.Queries) *config {
 		styles: styles,
 		maxWidth: maxWidth,
 		queries: q,
+		size: tea.WindowSizeMsg{ // Default size
+			Height: 60,
+			Width: 80,
+		},
 	}
 }
 
@@ -46,6 +52,16 @@ type styles struct {
 	ErrorHeaderText,
 	Help,
 	Spinner lipgloss.Style
+}
+
+// The outer box is defined as 2 on either side, see wrapperStyle
+func (c *config) getInnerWidth() int {
+	return c.size.Width - 4
+}
+
+// The top bar is 1 line, and the wrapperStyle adds -2, so the most innerHeight has to be - 3
+func (c *config) getInnerHeight() int {
+	return c.size.Height - 3
 }
 
 func (c *config) newSpinner() spinner.Model {
