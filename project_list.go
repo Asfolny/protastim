@@ -28,9 +28,9 @@ func newProjectList(config *config) projectListModel {
 
 	t := table.New(
 		table.WithColumns([]table.Column{
-			{Title: "ID", Width: 4},
-			{Title: "Name", Width: 10},
+			{Title: "ID", Width: 2},
 			{Title: "Status", Width: 8},
+			{Title: "Name"},
 		}),
 		table.WithFocused(true),
 		table.WithHeight(8),
@@ -63,7 +63,7 @@ func (m projectListModel) fetchProjects() tea.Msg {
 
 	tableRows := make([]table.Row, len(row), len(row))
 	for i, e := range row {
-		tableRows[i] = table.Row{strconv.FormatInt(e.ID, 10), e.Name, e.Status}
+		tableRows[i] = table.Row{strconv.FormatInt(e.ID, 10), e.Status, e.Name}
 	}
 
 	return rows{tableRows}
@@ -109,6 +109,19 @@ func (m projectListModel) View() string {
 	if m.err != nil {
 		return fmt.Sprintf("\nFailed fetching project: %v\n\n", m.err)
 	}
+	// TODO this specific handling should be done within Update instead
+	cols := m.table.Columns()
+	for i, col := range cols {
+		if col.Title == "Name" {
+			col.Width = m.config.getInnerWidth() - 4 - 8 - 2
+			cols[i] = col
+		}
+	}
+	m.table.SetColumns(cols)
+	m.table.SetHeight(m.config.getInnerHeight())
+	m.table.SetWidth(m.config.size.Width)
 
-	return m.config.styles.BaseTable.Render(m.table.View()) + "\n"
+	lg := m.config.lg
+
+	return lg.NewStyle().PaddingTop(1).Render(m.table.View())
 }
