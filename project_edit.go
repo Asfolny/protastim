@@ -50,7 +50,7 @@ func newProjectEdit(config *config, project *db.Project) tea.Model {
 			huh.NewSelect[string]().
 				Key("status").
 				Options(huh.NewOptions("N", "P", "C", "H", "D")...).
-				Title("Status ").
+				Title("Status").
 				Inline(true).
 				Value(&status),
 
