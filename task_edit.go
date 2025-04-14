@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"strings"
 
@@ -59,8 +60,28 @@ func newTaskEdit(config *config, task *db.Task, project string) tea.Model {
 				Inline(true).
 				Value(&status),
 
-			// TODO make a select between "create and open" and "only create"
-			// TODO select project
+			huh.NewSelect[string]().
+				Key("project").
+				Title("Project").
+				OptionsFunc(func() []huh.Option[string] {
+					if *m.loading {
+						empty := make([]string, 2)
+						empty[0] = "Loading..."
+						empty[1] = m.project
+						return huh.NewOptions(empty...)
+					}
+
+					return huh.NewOptions(m.projectsAsOptions()...)
+				}, m.loading).
+				Validate(func(val string) error {
+					if (val == "Choose a project") {
+						return errors.New("Must choose a project for task")
+					}
+
+					return nil
+				}).
+				Value(&m.project),
+
 			huh.NewConfirm().
 				Validate(func(v bool) error { // Should SHOULD close
 					if !v {
@@ -81,8 +102,39 @@ func newTaskEdit(config *config, task *db.Task, project string) tea.Model {
 	return m
 }
 
+func (m taskEditModel) projectsAsOptions() []string {
+	l := make([]string, len(*m.projects) + 1)
+	l[0] = "Choose a project"
+	for i, e := range *m.projects {
+		l[i+1] = e.Name
+		i++
+	}
+
+	return l
+}
+
+func (m taskEditModel) fetchProjects() tea.Msg {
+	row, err := m.config.queries.ListProjects(context.Background())
+	if err != nil {
+		return errMsg{err}
+	}
+
+	return row
+}
+
+func (m taskEditModel) getProjectId() int64 {
+	for _, e := range *m.projects {
+		if e.Name == m.form.GetString("project") {
+			return e.ID
+		}
+	}
+
+	return 0
+}
+
+
 func (m taskEditModel) Init() tea.Cmd {
-	return m.form.Init()
+	return tea.Batch(m.form.Init(), m.fetchProjects)
 }
 
 func (m taskEditModel) createTaskCmd() func() tea.Msg {
@@ -94,10 +146,12 @@ func (m taskEditModel) createTaskCmd() func() tea.Msg {
 		desc.Valid = true
 	}
 
+
 	dataset := db.CreateTaskParams{
 		Name:        m.form.GetString("name"),
 		Description: desc,
 		Status:      m.form.GetString("status"),
+		ProjectID:   m.getProjectId(),
 	}
 
 	return func() tea.Msg {
@@ -111,8 +165,13 @@ func (m taskEditModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.WindowSizeMsg:
 		m.width = min(msg.Width, maxWidth) - m.config.styles.Base.GetHorizontalFrameSize()
 
+	case []db.Project:
+		*m.projects = msg
+		*m.loading = false
+		return m, nil
+
 	case editingDone:
-		return m, changeView(newTaskList(m.config))
+		return m, changeView(newProject(m.config, m.getProjectId()))
 	}
 
 	var cmds []tea.Cmd
@@ -140,7 +199,14 @@ func (m taskEditModel) View() string {
 	form := m.config.lg.NewStyle().Margin(1, 0).Render(v)
 
 	errors := m.form.Errors()
-	header := m.appBoundaryView("Charm Employment Application")
+	var header string
+
+	if m.create {
+		header = m.appBoundaryView("Create Task")
+	} else {
+		header = m.appBoundaryView("Update Task")
+	}
+
 	if len(errors) > 0 {
 		header = m.appErrorBoundaryView(m.errorView())
 	}
