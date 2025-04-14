@@ -1,7 +1,6 @@
 package main
 
 import (
-	"strings"
 	"database/sql"
 	"fmt"
 	"os"
@@ -10,6 +9,7 @@ import (
 	goose "github.com/Asfolny/protastim/internal/sql"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/bubbles/table"
+	"github.com/charmbracelet/lipgloss"
 )
 
 type rows struct {
@@ -31,6 +31,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
 
 	switch msg := msg.(type) {
+	case tea.WindowSizeMsg:
+		m.config.size = msg
+		return m, nil
+
 	case newViewMsg:
 		m.view = msg
 		return m, nil
@@ -47,11 +51,28 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m model) View() string {
-	var b strings.Builder
-	b.WriteString(m.config.styles.HeaderText.Render("Protastim\n\n"))
-	b.WriteString(m.config.styles.Base.Render(m.view.View()))
+	lg := m.config.lg
+	border := lipgloss.NormalBorder()
+	wrapperStyle := lg.NewStyle().
+		BorderStyle(border).
+		BorderTop(false).
+		BorderLeft(true).
+		BorderBottom(true).
+		BorderRight(true).
+		BorderForeground(lipgloss.Color("63")).
+		Height(m.config.size.Height-2).
+		Width(m.config.size.Width-2)
 
-	return b.String()
+	statusStyle := lg.NewStyle().
+		Foreground(lipgloss.Color("63"))
+
+	content := wrapperStyle.Render(m.view.View())
+	title := statusStyle.Render(border.TopLeft + border.Top + border.Top) + " Protatastim"
+	titleWidth := lipgloss.Width(title)
+	status := lipgloss.PlaceHorizontal(m.config.size.Width-titleWidth, lipgloss.Right, "doing nothing " + statusStyle.Render(border.Top + border.Top + border.TopRight))
+
+
+	return title + status + "\n" + content
 }
 
 type newViewMsg tea.Model
@@ -89,12 +110,16 @@ func main() {
 
 	config := newConfig(db.New(conn))
 	model := model{
-		newProjectList(config),
-		config,
+		view: newProjectList(config),
+		config: config,
 	}
+	//model := model{
+	//	view: newTaskList(config),
+	//	config: config,
+	//}
 
-	//p := tea.NewProgram(model, tea.WithAltScreen())
-	p := tea.NewProgram(model)
+	p := tea.NewProgram(model, tea.WithAltScreen())
+	//p := tea.NewProgram(model)
 	if _, err := p.Run(); err != nil {
 		fmt.Printf("Alas, there's been an error: %v\n", err)
 		os.Exit(1)
