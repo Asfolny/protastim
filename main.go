@@ -96,6 +96,7 @@ func main() {
 
 	const q = `
     PRAGMA foreign_keys = ON;
+    PRAGMA journal_mode = WAL;
     `
 	_, err = conn.Exec(q)
 	if err != nil {
