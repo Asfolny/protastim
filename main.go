@@ -67,7 +67,7 @@ func (m model) View() string {
 		Foreground(lipgloss.Color("63"))
 
 	content := wrapperStyle.Render(m.view.View())
-	title := statusStyle.Render(border.TopLeft + border.Top + border.Top) + " Protatastim"
+	title := statusStyle.Render(border.TopLeft + border.Top + border.Top) + " Protastim"
 	titleWidth := lipgloss.Width(title)
 	status := lipgloss.PlaceHorizontal(m.config.size.Width-titleWidth, lipgloss.Right, "doing nothing " + statusStyle.Render(border.Top + border.Top + border.TopRight))
 
