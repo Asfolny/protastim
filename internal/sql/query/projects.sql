@@ -4,17 +4,28 @@ SELECT * FROM projects WHERE id = ?;
 -- name: ListProjects :many
 SELECT * FROM projects;
 
+-- name: ListProjectsStarted :many
+SELECT *
+FROM projects
+WHERE start_at <= DATE() AND (completed_at IS NULL OR completed_at >= date('now', '-7 days'))
+ORDER BY due_at;
+
+-- name: ListProjectsOverdue :many
+SELECT * FROM projects WHERE due_at <= DATE() AND completed_at IS NULL;
+
 -- name: CreateProject :one
-INSERT INTO projects (name, description, status)
-VALUES (?, ?, ?)
+INSERT INTO projects (name, description, start_at, due_at, completed_at)
+VALUES (?, ?, ?, ?, ?)
 RETURNING *;
 
 -- name: UpdateProject :one
 UPDATE projects
 SET
-  name = IIF(CAST(@set_name AS BOOLEAN), CAST(@name AS TEXT), name),
-  description = IIF(CAST(@set_description AS BOOLEAN), CAST(sqlc.narg('description') AS TEXT), description),
-  status = IIF(CAST(@set_status AS BOOLEAN), CAST(@status AS TEXT), status)
+  name = ?,
+  description = ?,
+  start_at = ?,
+  due_at = ?,
+  completed_at = ?
 WHERE id = ?
 RETURNING *;
 

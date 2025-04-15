@@ -1,5 +1,6 @@
 -- +goose Up
 CREATE TABLE time_entries (
+  id INTEGER PRIMARY KEY,
   start_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   end_at DATETIME,
   task_id INTEGER NOT NULL REFERENCES tasks(id),

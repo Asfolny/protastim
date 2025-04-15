@@ -3,7 +3,9 @@ CREATE TABLE tasks (
   id INTEGER PRIMARY KEY,
   name TEXT NOT NULL,
   description TEXT,
-  status TEXT NOT NULL DEFAULT 'N' CHECK(status IN ('N', 'P', 'C', 'H', 'D')),
+  start_at DATE,
+  due_at DATE,
+  completed_at DATE,
   project_id INTEGER NOT NULL REFERENCES projects(id),
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP

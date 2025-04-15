@@ -13,7 +13,9 @@ type Project struct {
 	ID          int64
 	Name        string
 	Description sql.NullString
-	Status      string
+	StartAt     sql.NullTime
+	DueAt       sql.NullTime
+	CompletedAt sql.NullTime
 	CreatedAt   time.Time
 	UpdatedAt   time.Time
 }
@@ -22,13 +24,16 @@ type Task struct {
 	ID          int64
 	Name        string
 	Description sql.NullString
-	Status      string
+	StartAt     sql.NullTime
+	DueAt       sql.NullTime
+	CompletedAt sql.NullTime
 	ProjectID   int64
 	CreatedAt   time.Time
 	UpdatedAt   time.Time
 }
 
 type TimeEntry struct {
+	ID        int64
 	StartAt   time.Time
 	EndAt     sql.NullTime
 	TaskID    int64
