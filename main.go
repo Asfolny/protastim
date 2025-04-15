@@ -16,8 +16,6 @@ type rows struct {
 	data []table.Row
 }
 
-type editingDone bool
-
 type model struct {
 	view   tea.Model
 	config *config
