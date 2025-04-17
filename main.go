@@ -8,13 +8,8 @@ import (
 	db "github.com/Asfolny/protastim/internal/database"
 	goose "github.com/Asfolny/protastim/internal/sql"
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/bubbles/table"
 	"github.com/charmbracelet/lipgloss"
 )
-
-type rows struct {
-	data []table.Row
-}
 
 type model struct {
 	view   tea.Model
@@ -49,19 +44,18 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m model) View() string {
-	lg := m.config.lg
 	border := lipgloss.NormalBorder()
-	wrapperStyle := lg.NewStyle().
+	wrapperStyle := lipgloss.NewStyle().
 		BorderStyle(border).
 		BorderTop(false).
 		BorderLeft(true).
 		BorderBottom(true).
 		BorderRight(true).
 		BorderForeground(lipgloss.Color("63")).
-		Height(m.config.size.Height-2).
-		Width(m.config.size.Width-2)
+		Height(m.config.getInnerHeight()).
+		Width(m.config.getInnerWidth())
 
-	statusStyle := lg.NewStyle().
+	statusStyle := lipgloss.NewStyle().
 		Foreground(lipgloss.Color("63"))
 
 	content := wrapperStyle.Render(m.view.View())
@@ -109,16 +103,11 @@ func main() {
 
 	config := newConfig(db.New(conn))
 	model := model{
-		view: newProjectList(config),
+		view: newDashboardSelector(config, config.getInnerWidth(), config.getInnerHeight()),
 		config: config,
 	}
-	//model := model{
-	//	view: newTaskList(config),
-	//	config: config,
-	//}
 
 	p := tea.NewProgram(model, tea.WithAltScreen())
-	//p := tea.NewProgram(model)
 	if _, err := p.Run(); err != nil {
 		fmt.Printf("Alas, there's been an error: %v\n", err)
 		os.Exit(1)
