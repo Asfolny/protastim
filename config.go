@@ -1,8 +1,6 @@
 package main
 
 import (
-	"sync"
-
 	db "github.com/Asfolny/protastim/internal/database"
 	"github.com/charmbracelet/bubbles/spinner"
 	"github.com/charmbracelet/lipgloss"
@@ -14,7 +12,6 @@ type config struct {
 	styles   *styles
 	maxWidth int
 	queries  *db.Queries
-	mu       sync.RWMutex
 	size     tea.WindowSizeMsg
 }
 
