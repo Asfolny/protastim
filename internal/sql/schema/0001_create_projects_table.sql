@@ -3,6 +3,8 @@ CREATE TABLE projects (
   id INTEGER PRIMARY KEY,
   name TEXT NOT NULL,
   description TEXT,
+  parent_id INTEGER REFERENCES projects(id),
+  planned_for DATE,
   start_at DATE,
   due_at DATE,
   completed_at DATE,

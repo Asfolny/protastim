@@ -10,222 +10,76 @@ import (
 	"database/sql"
 )
 
-const createProject = `-- name: CreateProject :one
-INSERT INTO projects (name, description, start_at, due_at, completed_at)
-VALUES (?, ?, ?, ?, ?)
-RETURNING id, name, description, start_at, due_at, completed_at, created_at, updated_at
+const projectDetail = `-- name: ProjectDetail :one
+select id, name, description, parent_id, planned_for, start_at, due_at, completed_at FROM projects WHERE id = ?
 `
 
-type CreateProjectParams struct {
-	Name        string
-	Description sql.NullString
-	StartAt     sql.NullTime
-	DueAt       sql.NullTime
-	CompletedAt sql.NullTime
-}
-
-func (q *Queries) CreateProject(ctx context.Context, arg CreateProjectParams) (Project, error) {
-	row := q.db.QueryRowContext(ctx, createProject,
-		arg.Name,
-		arg.Description,
-		arg.StartAt,
-		arg.DueAt,
-		arg.CompletedAt,
-	)
-	var i Project
-	err := row.Scan(
-		&i.ID,
-		&i.Name,
-		&i.Description,
-		&i.StartAt,
-		&i.DueAt,
-		&i.CompletedAt,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-	)
-	return i, err
-}
-
-const deleteProject = `-- name: DeleteProject :exec
-DELETE FROM projects WHERE id = ?
-`
-
-func (q *Queries) DeleteProject(ctx context.Context, id int64) error {
-	_, err := q.db.ExecContext(ctx, deleteProject, id)
-	return err
-}
-
-const getProject = `-- name: GetProject :one
-SELECT id, name, description, start_at, due_at, completed_at, created_at, updated_at FROM projects WHERE id = ?
-`
-
-func (q *Queries) GetProject(ctx context.Context, id int64) (Project, error) {
-	row := q.db.QueryRowContext(ctx, getProject, id)
-	var i Project
-	err := row.Scan(
-		&i.ID,
-		&i.Name,
-		&i.Description,
-		&i.StartAt,
-		&i.DueAt,
-		&i.CompletedAt,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-	)
-	return i, err
-}
-
-const listProjects = `-- name: ListProjects :many
-SELECT id, name, description, start_at, due_at, completed_at, created_at, updated_at FROM projects
-`
-
-func (q *Queries) ListProjects(ctx context.Context) ([]Project, error) {
-	rows, err := q.db.QueryContext(ctx, listProjects)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []Project
-	for rows.Next() {
-		var i Project
-		if err := rows.Scan(
-			&i.ID,
-			&i.Name,
-			&i.Description,
-			&i.StartAt,
-			&i.DueAt,
-			&i.CompletedAt,
-			&i.CreatedAt,
-			&i.UpdatedAt,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
-const listProjectsOverdue = `-- name: ListProjectsOverdue :many
-SELECT id, name, description, start_at, due_at, completed_at, created_at, updated_at FROM projects WHERE due_at <= DATE() AND completed_at IS NULL
-`
-
-func (q *Queries) ListProjectsOverdue(ctx context.Context) ([]Project, error) {
-	rows, err := q.db.QueryContext(ctx, listProjectsOverdue)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []Project
-	for rows.Next() {
-		var i Project
-		if err := rows.Scan(
-			&i.ID,
-			&i.Name,
-			&i.Description,
-			&i.StartAt,
-			&i.DueAt,
-			&i.CompletedAt,
-			&i.CreatedAt,
-			&i.UpdatedAt,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
-const listProjectsStarted = `-- name: ListProjectsStarted :many
-SELECT id, name, description, start_at, due_at, completed_at, created_at, updated_at
-FROM projects
-WHERE start_at <= DATE() AND (completed_at IS NULL OR completed_at >= date('now', '-7 days'))
-ORDER BY due_at
-`
-
-func (q *Queries) ListProjectsStarted(ctx context.Context) ([]Project, error) {
-	rows, err := q.db.QueryContext(ctx, listProjectsStarted)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []Project
-	for rows.Next() {
-		var i Project
-		if err := rows.Scan(
-			&i.ID,
-			&i.Name,
-			&i.Description,
-			&i.StartAt,
-			&i.DueAt,
-			&i.CompletedAt,
-			&i.CreatedAt,
-			&i.UpdatedAt,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
-const updateProject = `-- name: UpdateProject :one
-UPDATE projects
-SET
-  name = ?,
-  description = ?,
-  start_at = ?,
-  due_at = ?,
-  completed_at = ?
-WHERE id = ?
-RETURNING id, name, description, start_at, due_at, completed_at, created_at, updated_at
-`
-
-type UpdateProjectParams struct {
-	Name        string
-	Description sql.NullString
-	StartAt     sql.NullTime
-	DueAt       sql.NullTime
-	CompletedAt sql.NullTime
+type ProjectDetailRow struct {
 	ID          int64
+	Name        string
+	Description sql.NullString
+	ParentID    sql.NullInt64
+	PlannedFor  sql.NullTime
+	StartAt     sql.NullTime
+	DueAt       sql.NullTime
+	CompletedAt sql.NullTime
 }
 
-func (q *Queries) UpdateProject(ctx context.Context, arg UpdateProjectParams) (Project, error) {
-	row := q.db.QueryRowContext(ctx, updateProject,
-		arg.Name,
-		arg.Description,
-		arg.StartAt,
-		arg.DueAt,
-		arg.CompletedAt,
-		arg.ID,
-	)
-	var i Project
+func (q *Queries) ProjectDetail(ctx context.Context, id int64) (ProjectDetailRow, error) {
+	row := q.db.QueryRowContext(ctx, projectDetail, id)
+	var i ProjectDetailRow
 	err := row.Scan(
 		&i.ID,
 		&i.Name,
 		&i.Description,
+		&i.ParentID,
+		&i.PlannedFor,
 		&i.StartAt,
 		&i.DueAt,
 		&i.CompletedAt,
-		&i.CreatedAt,
-		&i.UpdatedAt,
 	)
 	return i, err
+}
+
+const projectName = `-- name: ProjectName :one
+SELECT name FROM projects WHERE id = ?
+`
+
+func (q *Queries) ProjectName(ctx context.Context, id int64) (string, error) {
+	row := q.db.QueryRowContext(ctx, projectName, id)
+	var name string
+	err := row.Scan(&name)
+	return name, err
+}
+
+const projectShort = `-- name: ProjectShort :one
+SELECT id, name, parent_id FROM projects WHERE id = ?
+`
+
+type ProjectShortRow struct {
+	ID       int64
+	Name     string
+	ParentID sql.NullInt64
+}
+
+func (q *Queries) ProjectShort(ctx context.Context, id int64) (ProjectShortRow, error) {
+	row := q.db.QueryRowContext(ctx, projectShort, id)
+	var i ProjectShortRow
+	err := row.Scan(&i.ID, &i.Name, &i.ParentID)
+	return i, err
+}
+
+const recProjectName = `-- name: RecProjectName :one
+WITH RECURSIVE rec_project_name(id, name) AS (
+    SELECT id, name FROM projects WHERE parent_id IS NULL
+    UNION ALL
+    SELECT projects.id, rec_project_name.name||' > '||projects.name FROM projects JOIN rec_project_name ON projects.parent_id = rec_project_name.id
+) SELECT name FROM rec_project_name WHERE projects.id = ?
+`
+
+func (q *Queries) RecProjectName(ctx context.Context, id int64) (string, error) {
+	row := q.db.QueryRowContext(ctx, recProjectName, id)
+	var name string
+	err := row.Scan(&name)
+	return name, err
 }

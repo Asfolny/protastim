@@ -3,6 +3,7 @@ CREATE TABLE tasks (
   id INTEGER PRIMARY KEY,
   name TEXT NOT NULL,
   description TEXT,
+  planned_for DATE,
   start_at DATE,
   due_at DATE,
   completed_at DATE,

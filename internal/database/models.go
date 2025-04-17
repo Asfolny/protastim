@@ -13,6 +13,8 @@ type Project struct {
 	ID          int64
 	Name        string
 	Description sql.NullString
+	ParentID    sql.NullInt64
+	PlannedFor  sql.NullTime
 	StartAt     sql.NullTime
 	DueAt       sql.NullTime
 	CompletedAt sql.NullTime
@@ -24,6 +26,7 @@ type Task struct {
 	ID          int64
 	Name        string
 	Description sql.NullString
+	PlannedFor  sql.NullTime
 	StartAt     sql.NullTime
 	DueAt       sql.NullTime
 	CompletedAt sql.NullTime

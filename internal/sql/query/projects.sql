@@ -1,33 +1,15 @@
--- name: GetProject :one
-SELECT * FROM projects WHERE id = ?;
+-- name: ProjectShort :one
+SELECT id, name, parent_id FROM projects WHERE id = ?;
 
--- name: ListProjects :many
-SELECT * FROM projects;
+-- name: ProjectDetail :one
+select id, name, description, parent_id, planned_for, start_at, due_at, completed_at FROM projects WHERE id = ?;
 
--- name: ListProjectsStarted :many
-SELECT *
-FROM projects
-WHERE start_at <= DATE() AND (completed_at IS NULL OR completed_at >= date('now', '-7 days'))
-ORDER BY due_at;
+-- name: ProjectName :one
+SELECT name FROM projects WHERE id = ?;
 
--- name: ListProjectsOverdue :many
-SELECT * FROM projects WHERE due_at <= DATE() AND completed_at IS NULL;
-
--- name: CreateProject :one
-INSERT INTO projects (name, description, start_at, due_at, completed_at)
-VALUES (?, ?, ?, ?, ?)
-RETURNING *;
-
--- name: UpdateProject :one
-UPDATE projects
-SET
-  name = ?,
-  description = ?,
-  start_at = ?,
-  due_at = ?,
-  completed_at = ?
-WHERE id = ?
-RETURNING *;
-
--- name: DeleteProject :exec
-DELETE FROM projects WHERE id = ?;
+-- name: RecProjectName :one
+WITH RECURSIVE rec_project_name(id, name) AS (
+    SELECT id, name FROM projects WHERE parent_id IS NULL
+    UNION ALL
+    SELECT projects.id, rec_project_name.name||' > '||projects.name FROM projects JOIN rec_project_name ON projects.parent_id = rec_project_name.id
+) SELECT name FROM rec_project_name WHERE projects.id = ?;
