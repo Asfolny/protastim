@@ -211,7 +211,12 @@ func (model dashboardSelector) Init() tea.Cmd {
 
 func (model dashboardSelector) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
-	case []list.Item:
+	case tea.WindowSizeMsg:
+		model.width = msg.Width
+		model.height = msg.Height
+		model.list.SetSize(model.width, model.height)
+		return model, nil
+
 		model.list.SetItems(msg)
 		model.list.StopSpinner()
 		return model, nil
@@ -244,11 +249,9 @@ func (model dashboardSelector) View() string {
 		return lipgloss.PlaceHorizontal(model.width, lipgloss.Center, model.err.Error())
 	}
 
-	model.list.SetSize(model.width, model.height)
-
 	if len(model.list.Items()) < 1 {
 		model.list.SetShowStatusBar(false)
 	}
 
-	return lipgloss.NewStyle().PaddingTop(1).Render(model.list.View())
+	return lipgloss.NewStyle().Height(model.height).Width(model.width).Render(model.list.View())
 }

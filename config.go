@@ -24,12 +24,10 @@ func newConfig(q *db.Queries) *config {
 
 const maxWidth = 80
 
-// The outer box is defined as 2 on either side, see wrapperStyle
 func (c *config) getInnerWidth() int {
-	return c.size.Width - 4
+	return c.size.Width - 2
 }
 
-// The top bar is 1 line, and the wrapperStyle adds -2, so the most innerHeight has to be - 3
 func (c *config) getInnerHeight() int {
-	return c.size.Height - 3
+	return c.size.Height - 2
 }
