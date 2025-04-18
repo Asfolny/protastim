@@ -52,18 +52,18 @@ func (m model) View() string {
 		BorderLeft(true).
 		BorderBottom(true).
 		BorderRight(true).
-		BorderForeground(lipgloss.Color("63")).
-		Height(m.config.getInnerHeight()).
-		Width(m.config.getInnerWidth())
+		BorderForeground(lipgloss.Color("63"))
 
-	statusStyle := lipgloss.NewStyle().
-		Foreground(lipgloss.Color("63"))
+	w, h := wrapperStyle.GetFrameSize()
+	titleGutter := 1
+	wrapperStyle = wrapperStyle.Height(m.config.size.Height - h - titleGutter).Width(m.config.size.Width - w)
 
-	content := wrapperStyle.Render(m.view.View())
-	title := statusStyle.Render(border.TopLeft + border.Top + border.Top) + " Protastim"
+	statusStyle := lipgloss.NewStyle().Height(titleGutter).Foreground(lipgloss.Color("63"))
+	title := statusStyle.Height(titleGutter).Render(border.TopLeft + border.Top + border.Top) + " Protastim"
 	titleWidth := lipgloss.Width(title)
 	status := lipgloss.PlaceHorizontal(m.config.size.Width-titleWidth, lipgloss.Right, "doing nothing " + statusStyle.Render(border.Top + border.Top + border.TopRight))
 
+	content := wrapperStyle.Render(m.view.View())
 
 	return title + status + "\n" + content
 }
