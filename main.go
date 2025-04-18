@@ -104,7 +104,7 @@ func main() {
 
 	config := newConfig(db.New(conn))
 	model := model{
-		view: newDashboardSelector(config, config.getInnerWidth(), config.getInnerHeight()),
+		view: newDashboard(config),
 		config: config,
 	}
 
