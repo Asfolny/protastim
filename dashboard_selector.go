@@ -34,6 +34,8 @@ func (item listItem) FilterValue() string {
 	return item.title
 }
 
+type selectorItemsMsg = []list.Item
+
 func (selector dashboardSelector) fetchScheduledTasks() tea.Msg {
 	row, err := selector.config.queries.ScheduledTasks(context.Background())
 
@@ -67,7 +69,7 @@ func (selector dashboardSelector) fetchScheduledTasks() tea.Msg {
 		}
 	}
 
-	return items
+	return selectorItemsMsg(items)
 }
 
 
@@ -194,7 +196,7 @@ func newDashboardSelector(c *config, width int, height int) dashboardSelector {
 	}
 
 	selectorList := list.New(make([]list.Item, 0), delegate, 0, 0)
-	selectorList.Title = "Planned"
+	selectorList.Title = "Plans"
 	selectorList.Styles.Title = lipgloss.NewStyle().Foreground(lipgloss.Color("#FFFDF5")).Background(lipgloss.Color("#25A065")).Padding(0, 1)
 	selectorList.Styles.NoItems = lipgloss.NewStyle().Padding(0, 2).Foreground(lipgloss.Color("#626262"))
 	selectorList.Styles.Spinner = lipgloss.NewStyle().Foreground(lipgloss.Color("#04B575"))
@@ -217,8 +219,16 @@ func (model dashboardSelector) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		model.list.SetSize(model.width, model.height)
 		return model, nil
 
+	case selectorItemsMsg:
 		model.list.SetItems(msg)
 		model.list.StopSpinner()
+		if len(msg) > 0 {
+			if i, ok := msg[0].(listItem); ok {
+				return model, func () tea.Msg {
+					return selectedItemMsg(i.id)
+				}
+			}
+		}
 		return model, nil
 
 	case errMsg:
