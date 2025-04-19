@@ -64,6 +64,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		switch msg.String() {
 		case "ctrl+c":
 			return m, tea.Quit
+		case "ctrl+t":
+			if m.entry.TaskID > 0 {
+				return m, toggleTimer(m.config.queries, m.entry.TaskID)
+			}
 		}
 	}
 
