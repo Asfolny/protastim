@@ -99,10 +99,8 @@ func (m model) View() string {
 	}
 
 	status := lipgloss.PlaceHorizontal(m.config.size.Width-titleWidth, lipgloss.Right, progress + " " + statusStyle.Render(border.Top + border.Top + border.TopRight))
-
 	content := wrapperStyle.Render(m.view.View())
-
-	return title + status + "\n" + content
+	return fmt.Sprintf("%s%s\n%s", title, status, content)
 }
 
 type newViewMsg tea.Model
