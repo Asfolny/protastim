@@ -20,3 +20,9 @@ SELECT start_at, end_at, task_id FROM time_entries WHERE ? BETWEEN start_at AND 
 
 -- name: TimeByTask :many
 SELECT start_at, end_at FROM time_entries WHERE task_id = ?;
+
+-- name: WorkingOnWithName :one
+SELECT time_entries.start_at, time_entries.task_id, tasks.name
+FROM time_entries
+JOIN tasks ON tasks.id = time_entries.task_id
+WHERE end_at IS NULL;

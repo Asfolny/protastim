@@ -172,3 +172,23 @@ func (q *Queries) UpdateTimeEntry(ctx context.Context, arg UpdateTimeEntryParams
 	)
 	return i, err
 }
+
+const workingOnWithName = `-- name: WorkingOnWithName :one
+SELECT time_entries.start_at, time_entries.task_id, tasks.name
+FROM time_entries
+JOIN tasks ON tasks.id = time_entries.task_id
+WHERE end_at IS NULL
+`
+
+type WorkingOnWithNameRow struct {
+	StartAt time.Time
+	TaskID  int64
+	Name    string
+}
+
+func (q *Queries) WorkingOnWithName(ctx context.Context) (WorkingOnWithNameRow, error) {
+	row := q.db.QueryRowContext(ctx, workingOnWithName)
+	var i WorkingOnWithNameRow
+	err := row.Scan(&i.StartAt, &i.TaskID, &i.Name)
+	return i, err
+}
