@@ -1,6 +1,5 @@
--- name: StartTimeTracking :one
-INSERT INTO time_entries (task_id, start_at) VALUES (?, ?)
-RETURNING *;
+-- name: StartTimeTracking :exec
+INSERT INTO time_entries (task_id, start_at) VALUES (?, ?);
 
 -- name: StopTimeTracking :exec
 UPDATE time_entries SET end_at = ? WHERE end_at IS NULL;

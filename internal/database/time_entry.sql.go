@@ -86,9 +86,8 @@ func (q *Queries) ListTimeEntries(ctx context.Context) ([]ListTimeEntriesRow, er
 	return items, nil
 }
 
-const startTimeTracking = `-- name: StartTimeTracking :one
+const startTimeTracking = `-- name: StartTimeTracking :exec
 INSERT INTO time_entries (task_id, start_at) VALUES (?, ?)
-RETURNING id, start_at, end_at, task_id, created_at, updated_at, deleted_at
 `
 
 type StartTimeTrackingParams struct {
@@ -96,19 +95,9 @@ type StartTimeTrackingParams struct {
 	StartAt time.Time
 }
 
-func (q *Queries) StartTimeTracking(ctx context.Context, arg StartTimeTrackingParams) (TimeEntry, error) {
-	row := q.db.QueryRowContext(ctx, startTimeTracking, arg.TaskID, arg.StartAt)
-	var i TimeEntry
-	err := row.Scan(
-		&i.ID,
-		&i.StartAt,
-		&i.EndAt,
-		&i.TaskID,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-		&i.DeletedAt,
-	)
-	return i, err
+func (q *Queries) StartTimeTracking(ctx context.Context, arg StartTimeTrackingParams) error {
+	_, err := q.db.ExecContext(ctx, startTimeTracking, arg.TaskID, arg.StartAt)
+	return err
 }
 
 const stopTimeTracking = `-- name: StopTimeTracking :exec
