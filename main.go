@@ -1,8 +1,11 @@
 package main
 
 import (
+	"context"
 	"database/sql"
+	"errors"
 	"fmt"
+	"time"
 	"os"
 
 	db "github.com/Asfolny/protastim/internal/database"
@@ -14,10 +17,24 @@ import (
 type model struct {
 	view   tea.Model
 	config *config
+	tracking bool
+	entry db.WorkingOnWithNameRow
 }
 
 func (m model) Init() tea.Cmd {
-	return m.view.Init()
+	return tea.Batch(m.view.Init(), func() tea.Msg {
+		current, err := m.config.queries.WorkingOnWithName(context.Background())
+
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil
+		}
+
+		if err != nil {
+			return errMsg{err}
+		}
+
+		return current
+	})
 }
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -28,6 +45,16 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.config.size = msg
 		m.view, cmd = m.view.Update(msg)
 		return m, cmd
+
+	case startedTimerMsg:
+		m.tracking = true
+		m.entry = msg
+		return m, nil
+
+	case stoppedTimerMsg:
+		m.tracking = false
+		m.entry = db.WorkingOnWithNameRow{}
+		return m, nil
 
 	case newViewMsg:
 		m.view = msg
@@ -61,7 +88,13 @@ func (m model) View() string {
 	statusStyle := lipgloss.NewStyle().Height(titleGutter).Foreground(lipgloss.Color("63"))
 	title := statusStyle.Height(titleGutter).Render(border.TopLeft + border.Top + border.Top) + " Protastim"
 	titleWidth := lipgloss.Width(title)
-	status := lipgloss.PlaceHorizontal(m.config.size.Width-titleWidth, lipgloss.Right, "doing nothing " + statusStyle.Render(border.Top + border.Top + border.TopRight))
+
+	var progress string
+	if m.tracking {
+		progress = fmt.Sprintf("Working on: %s - %s", m.entry.Name, time.Since(m.entry.StartAt).Round(time.Second).String())
+	}
+
+	status := lipgloss.PlaceHorizontal(m.config.size.Width-titleWidth, lipgloss.Right, progress + " " + statusStyle.Render(border.Top + border.Top + border.TopRight))
 
 	content := wrapperStyle.Render(m.view.View())
 
