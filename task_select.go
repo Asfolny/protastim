@@ -57,7 +57,7 @@ func startTask(queries *db.Queries, id int64) tea.Cmd {
 	}
 }
 
-func newPlannedTaskSelector(config *config, width int, height int) selector {
+func newScheduledTaskSelector(config *config, width int, height int) selector {
 	model := selector{config: config, width: width, height: height, fetchFunc: fetchScheduledTasks(config.queries)}
 
 	delegate := list.NewDefaultDelegate()
