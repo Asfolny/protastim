@@ -21,7 +21,7 @@ type dashboard struct {
 }
 
 func newDashboard(c *config) tea.Model {
-	return dashboard{config: c, selector: newDashboardSelector(c, c.getInnerWidth() / 5 * 2, c.getInnerHeight()-1)}
+	return dashboard{config: c, selector: newPlannedTaskSelector(c, c.getInnerWidth() / 5 * 2, c.getInnerHeight()-1)}
 }
 
 func (model dashboard) Init() tea.Cmd {
