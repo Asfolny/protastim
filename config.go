@@ -12,6 +12,7 @@ type config struct {
 	queries  *db.Queries
 	db       *sql.DB
 	size     tea.WindowSizeMsg
+	globalHotkeysEnabled bool
 }
 
 func newConfig(conn *sql.DB) *config {
@@ -23,6 +24,7 @@ func newConfig(conn *sql.DB) *config {
 			Height: 60,
 			Width: 80,
 		},
+		globalHotkeysEnabled: true,
 	}
 }
 
@@ -34,4 +36,12 @@ func (c *config) getInnerWidth() int {
 
 func (c *config) getInnerHeight() int {
 	return c.size.Height - 2
+}
+
+func (c *config) enableGlobalHotkeys() {
+	c.globalHotkeysEnabled = true
+}
+
+func (c *config) disableGlobalHotkeys() {
+	c.globalHotkeysEnabled = false
 }

@@ -61,6 +61,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, nil
 
 	case tea.KeyMsg:
+		if m.config.globalHotkeysEnabled == false {
+			break
+		}
+
 		switch msg.String() {
 		case "q":
 			return m, tea.Quit
