@@ -121,8 +121,8 @@ func newPlannedTaskSelector(config *config, width int, height int, source string
 		return nil
 	}
 
-	selectorList := list.New(make([]list.Item, 0), delegate, 0, 0)
-	selectorList.Title = "Schedule"
+	selectorList := list.New(make([]list.Item, 0), delegate, width, height)
+	selectorList.Title = "Planned"
 	selectorList.Styles.Title = lipgloss.NewStyle().Foreground(lipgloss.Color("#FFFDF5")).Background(lipgloss.Color("#25A065")).Padding(0, 1)
 	selectorList.Styles.NoItems = lipgloss.NewStyle().Padding(0, 2).Foreground(lipgloss.Color("#626262"))
 	selectorList.Styles.Spinner = lipgloss.NewStyle().Foreground(lipgloss.Color("#04B575"))
