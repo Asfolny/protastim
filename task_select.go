@@ -74,12 +74,10 @@ func newPlannedTaskSelector(config *config, width int, height int, source string
 	statusStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("#04B575"))
 
 	delegate.UpdateFunc = func(msg tea.Msg, list *list.Model) tea.Cmd {
-		var title string
 		var id int64
 		var started bool
 
 		if i, ok := list.SelectedItem().(listItem); ok {
-			title = i.title
 			id = i.id
 			started = i.started
 		} else {
@@ -91,7 +89,7 @@ func newPlannedTaskSelector(config *config, width int, height int, source string
 			switch msg.String() {
 			case "S":
 				cmds := []tea.Cmd{
-					list.NewStatusMessage(statusStyle.Render("Starting " + title)),
+					list.NewStatusMessage(statusStyle.Render("Starting")),
 					toggleTimer(config.queries, id),
 				}
 
@@ -103,7 +101,7 @@ func newPlannedTaskSelector(config *config, width int, height int, source string
 
 			case "alt+s":
 				cmds := []tea.Cmd{
-					list.NewStatusMessage(statusStyle.Render("Starting without tracking" + title)),
+					list.NewStatusMessage(statusStyle.Render("Starting without tracking")),
 				}
 
 				if !started {
