@@ -1,10 +1,6 @@
 package main
 
 import (
-	"context"
-	"fmt"
-	"strings"
-
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/bubbles/list"
@@ -15,6 +11,7 @@ type listItem struct {
 	desc string
 	id int64
 	started bool
+	completed bool
 }
 
 func (item listItem) Title() string {
@@ -35,7 +32,6 @@ type selectorItemsMsg struct {
 }
 
 type selectedItemMsg = int64
-
 func (model selector) changeItem(item list.Item) tea.Cmd {
 	if i, ok := item.(listItem); ok {
 		return func() tea.Msg {
@@ -44,35 +40,6 @@ func (model selector) changeItem(item list.Item) tea.Cmd {
 	}
 
 	return nil
-}
-
-
-func (model selector) fetchScheduledTasks() tea.Msg {
-	row, err := model.config.queries.ScheduledTasks(context.Background())
-
-	if err != nil {
-		return errMsg{err}
-	}
-
-	items := make([]list.Item, len(row))
-	for i, e := range row {
-		var desc strings.Builder
-
-		desc.WriteString(fmt.Sprintf("Project: %s", e.ProjectName))
-
-		if e.DueAt.Valid {
-			desc.WriteString(fmt.Sprintf("\nDue: %s", e.DueAt.Time.Format("2006/02/01")))
-		}
-
-		items[i] = listItem{
-			title: e.Name,
-			desc: desc.String(),
-			id: e.ID,
-			started: e.StartAt.Valid,
-		}
-	}
-
-	return selectorItemsMsg(items)
 }
 
 type selector struct {
