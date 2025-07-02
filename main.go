@@ -145,7 +145,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	config := newConfig(db.New(conn))
+	config := newConfig(conn)
 	model := model{
 		view: newDashboard(config),
 		config: config,

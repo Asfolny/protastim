@@ -1,6 +1,8 @@
 package main
 
 import (
+	"database/sql"
+
 	db "github.com/Asfolny/protastim/internal/database"
 	tea "github.com/charmbracelet/bubbletea"
 )
@@ -8,13 +10,15 @@ import (
 type config struct {
 	maxWidth int
 	queries  *db.Queries
+	db       *sql.DB
 	size     tea.WindowSizeMsg
 }
 
-func newConfig(q *db.Queries) *config {
+func newConfig(conn *sql.DB) *config {
 	return &config{
 		maxWidth: maxWidth,
-		queries: q,
+		queries: db.New(conn),
+		db: conn,
 		size: tea.WindowSizeMsg{
 			Height: 60,
 			Width: 80,
