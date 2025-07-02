@@ -50,6 +50,7 @@ type selector struct {
 	err    error
 	width  int
 	height int
+	ignoreChange bool
 }
 
 func (model selector) Init() tea.Cmd {
@@ -95,7 +96,7 @@ func (model selector) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	cmds = append(cmds, cmd)
 	model.list = newList
 
-	if model.list.SelectedItem() != nil && model.list.FilterState() != list.Filtering && prevItem != model.list.SelectedItem() {
+	if model.ignoreChange == false && model.list.SelectedItem() != nil && model.list.FilterState() != list.Filtering && prevItem != model.list.SelectedItem() {
 		cmds = append(cmds, model.changeItem(model.list.SelectedItem()))
 	}
 
