@@ -41,6 +41,44 @@ func (q *Queries) GetTask(ctx context.Context, id int64) (Task, error) {
 	return i, err
 }
 
+const getTasksByProject = `-- name: GetTasksByProject :many
+SELECT id, name, description, planned_for, start_at, due_at, completed_at, project_id, created_at, updated_at FROM tasks WHERE project_id = ?
+`
+
+func (q *Queries) GetTasksByProject(ctx context.Context, projectID int64) ([]Task, error) {
+	rows, err := q.db.QueryContext(ctx, getTasksByProject, projectID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Task
+	for rows.Next() {
+		var i Task
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Description,
+			&i.PlannedFor,
+			&i.StartAt,
+			&i.DueAt,
+			&i.CompletedAt,
+			&i.ProjectID,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const scheduledTasks = `-- name: ScheduledTasks :many
 WITH RECURSIVE rec_project_name(id, name, level) AS (
   SELECT id, name, 1 AS level FROM projects WHERE parent_id IS NULL

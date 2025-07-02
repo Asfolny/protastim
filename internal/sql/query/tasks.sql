@@ -14,6 +14,9 @@ FROM tasks
 JOIN rec_project_name ON tasks.project_id = rec_project_name.id
 WHERE planned_for <= DATE() AND completed_at IS NULL ORDER BY planned_for, start_at NULLS LAST, due_at NULLS LAST;
 
+-- name: GetTasksByProject :many
+SELECT * FROM tasks WHERE project_id = ?;
+
 -- name: StartTask :exec
 UPDATE tasks SET start_at = IIF(start_at IS NULL, DATE(), start_at) WHERE id = ?;
 

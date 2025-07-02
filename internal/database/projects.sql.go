@@ -10,12 +10,21 @@ import (
 	"database/sql"
 )
 
-const projectDetail = `-- name: ProjectDetail :one
-select id, name, description, parent_id, planned_for, start_at, due_at, completed_at FROM projects WHERE id = ?
+const completeProject = `-- name: CompleteProject :exec
+UPDATE projects SET completed_at = IIF(completed_at IS NULL, DATE(), start_at) WHERE id = ?
 `
 
-type ProjectDetailRow struct {
-	ID          int64
+func (q *Queries) CompleteProject(ctx context.Context, id int64) error {
+	_, err := q.db.ExecContext(ctx, completeProject, id)
+	return err
+}
+
+const createProject = `-- name: CreateProject :one
+INSERT INTO projects (name, description, parent_id, planned_for, start_at, due_at, completed_at) VALUES (?, ?, ?, ?, ?, ?, ?)
+RETURNING id, name, description, parent_id, planned_for, start_at, due_at, completed_at, created_at, updated_at
+`
+
+type CreateProjectParams struct {
 	Name        string
 	Description sql.NullString
 	ParentID    sql.NullInt64
@@ -25,9 +34,17 @@ type ProjectDetailRow struct {
 	CompletedAt sql.NullTime
 }
 
-func (q *Queries) ProjectDetail(ctx context.Context, id int64) (ProjectDetailRow, error) {
-	row := q.db.QueryRowContext(ctx, projectDetail, id)
-	var i ProjectDetailRow
+func (q *Queries) CreateProject(ctx context.Context, arg CreateProjectParams) (Project, error) {
+	row := q.db.QueryRowContext(ctx, createProject,
+		arg.Name,
+		arg.Description,
+		arg.ParentID,
+		arg.PlannedFor,
+		arg.StartAt,
+		arg.DueAt,
+		arg.CompletedAt,
+	)
+	var i Project
 	err := row.Scan(
 		&i.ID,
 		&i.Name,
@@ -37,6 +54,30 @@ func (q *Queries) ProjectDetail(ctx context.Context, id int64) (ProjectDetailRow
 		&i.StartAt,
 		&i.DueAt,
 		&i.CompletedAt,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const getProject = `-- name: GetProject :one
+select id, name, description, parent_id, planned_for, start_at, due_at, completed_at, created_at, updated_at FROM projects WHERE id = ?
+`
+
+func (q *Queries) GetProject(ctx context.Context, id int64) (Project, error) {
+	row := q.db.QueryRowContext(ctx, getProject, id)
+	var i Project
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Description,
+		&i.ParentID,
+		&i.PlannedFor,
+		&i.StartAt,
+		&i.DueAt,
+		&i.CompletedAt,
+		&i.CreatedAt,
+		&i.UpdatedAt,
 	)
 	return i, err
 }
@@ -69,6 +110,71 @@ func (q *Queries) ProjectShort(ctx context.Context, id int64) (ProjectShortRow, 
 	return i, err
 }
 
+const projectsWithRecName = `-- name: ProjectsWithRecName :many
+WITH RECURSIVE rec_project_name(id, name) AS (
+    SELECT id, name FROM projects WHERE parent_id IS NULL
+    UNION ALL
+    SELECT projects.id, rec_project_name.name||' > '||projects.name FROM projects JOIN rec_project_name ON projects.parent_id = rec_project_name.id
+) SELECT
+  projects.id,
+  projects.name,
+  projects.description,
+  projects.parent_id,
+  projects.planned_for,
+  projects.start_at,
+  projects.due_at,
+  projects.completed_at,
+  rec_project_name.name AS parent_tree
+FROM projects
+LEFT JOIN rec_project_name ON projects.parent_id = rec_project_name.id
+ORDER BY COALESCE(parent_id, projects.id), projects.id
+`
+
+type ProjectsWithRecNameRow struct {
+	ID          int64
+	Name        string
+	Description sql.NullString
+	ParentID    sql.NullInt64
+	PlannedFor  sql.NullTime
+	StartAt     sql.NullTime
+	DueAt       sql.NullTime
+	CompletedAt sql.NullTime
+	ParentTree  sql.NullString
+}
+
+func (q *Queries) ProjectsWithRecName(ctx context.Context) ([]ProjectsWithRecNameRow, error) {
+	rows, err := q.db.QueryContext(ctx, projectsWithRecName)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ProjectsWithRecNameRow
+	for rows.Next() {
+		var i ProjectsWithRecNameRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Description,
+			&i.ParentID,
+			&i.PlannedFor,
+			&i.StartAt,
+			&i.DueAt,
+			&i.CompletedAt,
+			&i.ParentTree,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const recProjectName = `-- name: RecProjectName :one
 WITH RECURSIVE rec_project_name(id, name) AS (
     SELECT id, name FROM projects WHERE parent_id IS NULL
@@ -82,4 +188,143 @@ func (q *Queries) RecProjectName(ctx context.Context, id int64) (string, error) 
 	var name string
 	err := row.Scan(&name)
 	return name, err
+}
+
+const startProject = `-- name: StartProject :exec
+UPDATE projects SET start_at = IIF(start_at IS NULL, DATE(), start_at) WHERE id = ?
+`
+
+func (q *Queries) StartProject(ctx context.Context, id int64) error {
+	_, err := q.db.ExecContext(ctx, startProject, id)
+	return err
+}
+
+const topProjects = `-- name: TopProjects :many
+SELECT id, name FROM projects WHERE parent_id IS NULL
+`
+
+type TopProjectsRow struct {
+	ID   int64
+	Name string
+}
+
+func (q *Queries) TopProjects(ctx context.Context) ([]TopProjectsRow, error) {
+	rows, err := q.db.QueryContext(ctx, topProjects)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []TopProjectsRow
+	for rows.Next() {
+		var i TopProjectsRow
+		if err := rows.Scan(&i.ID, &i.Name); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const updateProjectCompletedAt = `-- name: UpdateProjectCompletedAt :exec
+UPDATE projects SET completed_at = ? WHERE id = ?
+`
+
+type UpdateProjectCompletedAtParams struct {
+	CompletedAt sql.NullTime
+	ID          int64
+}
+
+func (q *Queries) UpdateProjectCompletedAt(ctx context.Context, arg UpdateProjectCompletedAtParams) error {
+	_, err := q.db.ExecContext(ctx, updateProjectCompletedAt, arg.CompletedAt, arg.ID)
+	return err
+}
+
+const updateProjectDescription = `-- name: UpdateProjectDescription :exec
+UPDATE projects SET description = ? WHERE id = ?
+`
+
+type UpdateProjectDescriptionParams struct {
+	Description sql.NullString
+	ID          int64
+}
+
+func (q *Queries) UpdateProjectDescription(ctx context.Context, arg UpdateProjectDescriptionParams) error {
+	_, err := q.db.ExecContext(ctx, updateProjectDescription, arg.Description, arg.ID)
+	return err
+}
+
+const updateProjectDueAt = `-- name: UpdateProjectDueAt :exec
+UPDATE projects SET due_at = ? WHERE id = ?
+`
+
+type UpdateProjectDueAtParams struct {
+	DueAt sql.NullTime
+	ID    int64
+}
+
+func (q *Queries) UpdateProjectDueAt(ctx context.Context, arg UpdateProjectDueAtParams) error {
+	_, err := q.db.ExecContext(ctx, updateProjectDueAt, arg.DueAt, arg.ID)
+	return err
+}
+
+const updateProjectName = `-- name: UpdateProjectName :exec
+UPDATE projects SET name = ? WHERE id = ?
+`
+
+type UpdateProjectNameParams struct {
+	Name string
+	ID   int64
+}
+
+func (q *Queries) UpdateProjectName(ctx context.Context, arg UpdateProjectNameParams) error {
+	_, err := q.db.ExecContext(ctx, updateProjectName, arg.Name, arg.ID)
+	return err
+}
+
+const updateProjectParent = `-- name: UpdateProjectParent :exec
+UPDATE projects SET parent_id = ? WHERE id = ?
+`
+
+type UpdateProjectParentParams struct {
+	ParentID sql.NullInt64
+	ID       int64
+}
+
+func (q *Queries) UpdateProjectParent(ctx context.Context, arg UpdateProjectParentParams) error {
+	_, err := q.db.ExecContext(ctx, updateProjectParent, arg.ParentID, arg.ID)
+	return err
+}
+
+const updateProjectPlannedFor = `-- name: UpdateProjectPlannedFor :exec
+UPDATE projects SET planned_for = ? WHERE id = ?
+`
+
+type UpdateProjectPlannedForParams struct {
+	PlannedFor sql.NullTime
+	ID         int64
+}
+
+func (q *Queries) UpdateProjectPlannedFor(ctx context.Context, arg UpdateProjectPlannedForParams) error {
+	_, err := q.db.ExecContext(ctx, updateProjectPlannedFor, arg.PlannedFor, arg.ID)
+	return err
+}
+
+const updateProjectStartAt = `-- name: UpdateProjectStartAt :exec
+UPDATE projects SET start_at = ? WHERE id = ?
+`
+
+type UpdateProjectStartAtParams struct {
+	StartAt sql.NullTime
+	ID      int64
+}
+
+func (q *Queries) UpdateProjectStartAt(ctx context.Context, arg UpdateProjectStartAtParams) error {
+	_, err := q.db.ExecContext(ctx, updateProjectStartAt, arg.StartAt, arg.ID)
+	return err
 }
