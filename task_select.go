@@ -114,6 +114,9 @@ func newPlannedTaskSelector(config *config, width int, height int, source string
 
 			case "T":
 				return tea.Batch(toggleTimer(config.queries, id), list.NewStatusMessage(statusStyle.Render("Toggling timer")))
+
+			case "C":
+				return tea.Batch(list.NewStatusMessage(statusStyle.Render("Completing")), completeTask(config.queries, id))
 			}
 		}
 
