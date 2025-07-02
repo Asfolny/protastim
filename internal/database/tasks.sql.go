@@ -10,6 +10,15 @@ import (
 	"database/sql"
 )
 
+const completeTask = `-- name: CompleteTask :exec
+UPDATE tasks SET completed_at = IIF(completed_at IS NULL, DATE(), completed_at) WHERE id = ?
+`
+
+func (q *Queries) CompleteTask(ctx context.Context, id int64) error {
+	_, err := q.db.ExecContext(ctx, completeTask, id)
+	return err
+}
+
 const getTask = `-- name: GetTask :one
 SELECT id, name, description, planned_for, start_at, due_at, completed_at, project_id, created_at, updated_at FROM tasks WHERE id = ?
 `
