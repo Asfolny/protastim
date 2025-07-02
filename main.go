@@ -68,6 +68,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if m.entry.TaskID > 0 {
 				return m, toggleTimer(m.config.queries, m.entry.TaskID)
 			}
+		case "D":
+			if _, ok := m.view.(dashboard); !ok {
+				return m, changeView(newDashboard(m.config))
+			}
 		}
 	}
 
