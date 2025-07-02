@@ -34,11 +34,11 @@ func (model dashboard) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		var cmds []tea.Cmd
 		var cmd tea.Cmd
 
-		model.selector, cmd = model.selector.Update(tea.WindowSizeMsg{Width: model.config.getInnerWidth() / 5 * 2, Height: model.config.getInnerHeight()-1})
+		model.selector, cmd = model.selector.Update(tea.WindowSizeMsg{Width: model.config.getInnerWidth() / 5 * 2, Height: model.config.getInnerHeight()-2})
 		cmds = append(cmds, cmd)
 
 		if model.taskDetails != nil {
-			model.taskDetails, cmd = model.taskDetails.Update(tea.WindowSizeMsg{Width: model.config.getInnerWidth() / 5 * 3, Height: model.config.getInnerHeight()-1})
+			model.taskDetails, cmd = model.taskDetails.Update(tea.WindowSizeMsg{Width: model.config.getInnerWidth() / 5 * 3, Height: model.config.getInnerHeight()-2})
 			cmds = append(cmds, cmd)
 		}
 
@@ -59,7 +59,7 @@ func (model dashboard) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return model, tea.Batch(cmds...)
 
 	case selectedItemMsg:
-		model.taskDetails = newTaskView(model.config, msg, model.config.getInnerWidth() / 5 * 3 , model.config.getInnerHeight() - 1)
+		model.taskDetails = newTaskView(model.config, msg, model.config.getInnerWidth() / 5 * 3, model.config.getInnerHeight() - 2)
 		return model, model.taskDetails.Init()
 
 	case selectorItemsMsg, completedTaskMsg, startedTaskMsg:
@@ -113,17 +113,33 @@ func (model dashboard) View() string {
 	dashboardStyle := lipgloss.NewStyle().
 		MarginTop(1)
 
-	selectorView := model.selector.View()
+	var selectorView string
+	if model.focus == dashboardSelectorFocus {
+		selectorView = lipgloss.NewStyle().
+			Border(lipgloss.NormalBorder(), false).
+			BorderForeground(lipgloss.Color("#a6da95")).
+			BorderBottom(true).
+			Render(model.selector.View())
+	} else {
+		selectorView = model.selector.View()
+	}
+
 	taskDetailsView := lipgloss.NewStyle(). // Setting a default style, as unselected it may be nil
-		BorderStyle(lipgloss.ASCIIBorder()).
-		BorderBackground(lipgloss.Color("99")).
 		Width(model.config.getInnerWidth() / 5 * 3).
-		Height(model.config.getInnerHeight() - 1).
+		Height(model.config.getInnerHeight() - 2).
 		Align(lipgloss.Center, lipgloss.Center).
 		Render("Nothing selected")
 
 	if model.taskDetails != nil {
-		taskDetailsView = model.taskDetails.View()
+		if model.focus == dashboardTaskDetailsFocus {
+			taskDetailsView = lipgloss.NewStyle().
+				Border(lipgloss.NormalBorder(), false).
+				BorderForeground(lipgloss.Color("#a6da95")).
+				BorderBottom(true).
+				Render(model.taskDetails.View())
+		} else {
+			taskDetailsView = model.taskDetails.View()
+		}
 	}
 
 	if model.err != nil {
