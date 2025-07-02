@@ -78,16 +78,19 @@ func (model dashboard) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case tea.KeyMsg:
 		switch msg.String() {
-		case "tab":
-			switch model.focus {
-			case dashboardSelectorFocus:
+		case "enter":
+			if model.focus == dashboardSelectorFocus {
 				model.focus = dashboardTaskDetailsFocus
-				return model, nil
-
-			case dashboardTaskDetailsFocus:
-				model.focus = dashboardSelectorFocus
-				return model, nil
 			}
+
+			return model, nil
+
+		case "esc":
+			if model.focus == dashboardTaskDetailsFocus {
+				model.focus = dashboardSelectorFocus
+			}
+
+			return model, nil
 		}
 	}
 
