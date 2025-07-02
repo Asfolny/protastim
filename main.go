@@ -72,6 +72,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if _, ok := m.view.(dashboard); !ok {
 				return m, changeView(newDashboard(m.config))
 			}
+		case "P":
+			if _, ok := m.view.(projectOverview); !ok {
+				return m, changeView(newProjectOverview(m.config))
+			}
 		}
 	}
 
