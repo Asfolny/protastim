@@ -115,6 +115,7 @@ func (model selector) View() string {
 	}
 
 	if len(model.list.Items()) < 1 {
+		model.list.SetShowPagination(false)
 		model.list.SetShowStatusBar(false)
 	}
 
