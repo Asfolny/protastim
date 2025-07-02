@@ -47,7 +47,7 @@ func newTaskView(config *config, id int64, width int, height int) taskView {
 }
 
 func (model taskView) Init() tea.Cmd {
-	return tea.Batch(model.spinner.Tick, model.fetchTaskData)
+	return tea.Batch(model.spinner.Tick, fetchTaskData(model.config.queries, model.taskId))
 }
 
 func (model taskView) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
