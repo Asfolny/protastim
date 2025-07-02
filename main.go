@@ -62,7 +62,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case tea.KeyMsg:
 		switch msg.String() {
-		case "ctrl+c":
+		case "q":
 			return m, tea.Quit
 		case "ctrl+t":
 			if m.entry.TaskID > 0 {
