@@ -26,13 +26,15 @@ type taskView struct {
 
 type fetchedTask = db.Task
 
-func (model taskView) fetchTaskData() tea.Msg {
-	task, err:= model.config.queries.GetTask(context.Background(), model.taskId)
+func fetchTaskData(q *db.Queries, id int64) tea.Cmd {
+	return func() tea.Msg {
+	task, err:= q.GetTask(context.Background(), id)
 	if err != nil {
 		return errMsg{err}
 	}
 
 	return task
+	}
 }
 
 func newTaskView(config *config, id int64, width int, height int) taskView {
