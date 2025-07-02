@@ -6,10 +6,10 @@ import (
 	"strings"
 
 	db "github.com/Asfolny/protastim/internal/database"
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/bubbles/list"
 	"github.com/charmbracelet/bubbles/spinner"
+	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
 )
 
 func fetchScheduledTasks(queries *db.Queries) tea.Cmd {
