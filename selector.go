@@ -87,6 +87,12 @@ func (model selector) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case startedTaskMsg, completedTaskMsg:
 		return model, tea.Batch(model.fetchFunc, model.list.StartSpinner())
+
+	case tea.KeyMsg:
+		switch msg.String() {
+		case "ctrl+r":
+			return model, model.fetchFunc
+		}
 	}
 
 	var cmds []tea.Cmd
