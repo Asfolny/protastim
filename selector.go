@@ -29,7 +29,10 @@ func (item listItem) FilterValue() string {
 	return item.title
 }
 
-type selectorItemsMsg = []list.Item
+type selectorItemsMsg struct {
+	source string
+	items []list.Item
+}
 
 type selectedItemMsg = int64
 
@@ -76,6 +79,7 @@ type selector struct {
 	config *config
 	list   list.Model
 	fetchFunc tea.Cmd
+	tracking string
 	err    error
 	width  int
 	height int
@@ -94,11 +98,14 @@ func (model selector) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return model, nil
 
 	case selectorItemsMsg:
-		model.list.SetItems(msg)
-		model.list.StopSpinner()
-		if len(msg) > 0 {
-			if i, ok := msg[0].(listItem); ok {
-				return model, func () tea.Msg {
+		if model.tracking == msg.source {
+			model.list.SetItems(msg.items)
+			model.list.StopSpinner()
+			i, ok := model.list.SelectedItem().(listItem)
+
+
+			if len(msg.items) > 0 && ok && model.ignoreChange == false {
+				return model, func() tea.Msg {
 					return selectedItemMsg(i.id)
 				}
 			}

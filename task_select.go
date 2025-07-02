@@ -12,7 +12,7 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
-func fetchScheduledTasks(queries *db.Queries) tea.Cmd {
+func fetchScheduledTasks(queries *db.Queries, source string) tea.Cmd {
 	return func () tea.Msg {
 		row, err := queries.ScheduledTasks(context.Background())
 
@@ -38,7 +38,7 @@ func fetchScheduledTasks(queries *db.Queries) tea.Cmd {
 			}
 		}
 
-		return selectorItemsMsg(items)
+		return selectorItemsMsg{source, items}
 	}
 }
 
@@ -57,8 +57,8 @@ func startTask(queries *db.Queries, id int64) tea.Cmd {
 	}
 }
 
-func newScheduledTaskSelector(config *config, width int, height int) selector {
-	model := selector{config: config, width: width, height: height, fetchFunc: fetchScheduledTasks(config.queries)}
+func newPlannedTaskSelector(config *config, width int, height int, source string) selector {
+	model := selector{config: config, width: width, height: height, fetchFunc: fetchScheduledTasks(config.queries, source), tracking: source}
 
 	delegate := list.NewDefaultDelegate()
 	delegate.SetHeight(3)
