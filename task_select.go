@@ -42,10 +42,7 @@ func fetchScheduledTasks(queries *db.Queries, source string) tea.Cmd {
 	}
 }
 
-type startedTaskMsg struct {
-	taskId int64
-}
-
+type startedTaskMsg int64
 func startTask(queries *db.Queries, id int64) tea.Cmd {
 	return func () tea.Msg {
 		err := queries.StartTask(context.Background(), id)
@@ -53,7 +50,10 @@ func startTask(queries *db.Queries, id int64) tea.Cmd {
 			return errMsg{err}
 		}
 
-		return startedTaskMsg{id}
+		return startedTaskMsg(id)
+	}
+}
+
 	}
 }
 
