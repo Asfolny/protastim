@@ -62,7 +62,7 @@ func (model dashboard) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		model.taskDetails = newTaskView(model.config, msg, model.config.getInnerWidth() / 5 * 3 , model.config.getInnerHeight() - 1)
 		return model, model.taskDetails.Init()
 
-	case selectorItemsMsg:
+	case selectorItemsMsg, completedTaskMsg, startedTaskMsg:
 		var cmd tea.Cmd
 		model.selector, cmd = model.selector.Update(msg)
 		return model, cmd

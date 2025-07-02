@@ -17,5 +17,8 @@ WHERE planned_for <= DATE() AND completed_at IS NULL ORDER BY planned_for, start
 -- name: StartTask :exec
 UPDATE tasks SET start_at = IIF(start_at IS NULL, DATE(), start_at) WHERE id = ?;
 
+-- name: CompleteTask :exec
+UPDATE tasks SET completed_at = IIF(completed_at IS NULL, DATE(), completed_at) WHERE id = ?;
+
 -- name: GetTask :one
 SELECT * FROM tasks WHERE id = ?;

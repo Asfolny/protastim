@@ -54,6 +54,15 @@ func startTask(queries *db.Queries, id int64) tea.Cmd {
 	}
 }
 
+type completedTaskMsg int64
+func completeTask(queries *db.Queries, id int64) tea.Cmd {
+	return func() tea.Msg {
+		err := queries.CompleteTask(context.Background(), id)
+		if err != nil {
+			return errMsg{err}
+		}
+
+		return completedTaskMsg(id)
 	}
 }
 

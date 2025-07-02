@@ -117,7 +117,7 @@ func (model selector) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		model.list.StopSpinner()
 		return model, nil
 
-	case startedTaskMsg:
+	case startedTaskMsg, completedTaskMsg:
 		return model, tea.Batch(model.fetchFunc, model.list.StartSpinner())
 	}
 
