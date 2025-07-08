@@ -11,3 +11,8 @@ git clone https://github.com/Asfolny/protastim
 cd protastim
 go run ./...
 ```
+
+## Contributing
+If you're interested in contributing code, simply fork the repo and open a PR back to `main`
+
+If you're not quite sure if the feature or idea is something for the project however, please first open an new issue for discussion
